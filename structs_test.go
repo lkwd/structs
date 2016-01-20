@@ -164,6 +164,56 @@ func TestMap_CustomTag(t *testing.T) {
 
 }
 
+func TestMap_CustomTag_FilterList(t *testing.T) {
+	var T = struct {
+		A string `json:"x"`
+		B int    `json:"y"`
+		C bool   `json:"z"`
+		D struct {
+			E string `json:"jkl"`
+		} `json:"nested"`
+	}{
+		A: "a-value",
+		B: 2,
+		C: true,
+	}
+	T.D.E = "e-value"
+
+	s := New(T)
+	s.TagName = "json"
+
+	f := []string{"x", "nested"}
+
+	a := s.Map(f...)
+
+	inMap := func(key interface{}) bool {
+		for k := range a {
+			for _, e := range f {
+				if key == e {
+					return false
+				}
+			}
+			if reflect.DeepEqual(k, key) {
+				return true
+			}
+		}
+		return false
+	}
+
+	for _, key := range []string{"x", "y", "z"} {
+		if !inMap(key) {
+			t.Logf("Map should not have the key %v", key)
+		}
+	}
+
+	_, ok := a["nested"].(map[string]interface{})
+	if !ok {
+		t.Skipf("Map should not contain the D field that is tagged as 'nested'")
+	}
+
+}
+
+
 func TestMap_MultipleCustomTag(t *testing.T) {
 	var A = struct {
 		X string `aa:"ax"`

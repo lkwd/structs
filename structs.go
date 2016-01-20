@@ -72,10 +72,10 @@ func New(s interface{}) *Struct {
 //
 // Note that only exported fields of a struct can be accessed, non exported
 // fields will be neglected.
-func (s *Struct) Map() map[string]interface{} {
+func (s *Struct) Map(filterList ...string) map[string]interface{} {
 	out := make(map[string]interface{})
 
-	fields := s.structFields()
+	fields := s.structFields(filterList...)
 
 	for _, field := range fields {
 		name := field.Name
@@ -104,7 +104,7 @@ func (s *Struct) Map() map[string]interface{} {
 			// map[string]interface{} too
 			n := New(val.Interface())
 			n.TagName = s.TagName
-			m := n.Map()
+			m := n.Map(filterList...)
 			if len(m) == 0 {
 				finalVal = val.Interface()
 			} else {
@@ -380,10 +380,18 @@ func (s *Struct) Name() string {
 	return s.value.Type().Name()
 }
 
+func In(s string, filterList []string) bool {
+	for _, name := range filterList {
+		if name == s {
+			return true
+		}
+	}
+	return false
+}
 // structFields returns the exported struct fields for a given s struct. This
 // is a convenient helper method to avoid duplicate code in some of the
 // functions.
-func (s *Struct) structFields() []reflect.StructField {
+func (s *Struct) structFields(filterList ...string) []reflect.StructField {
 	t := s.value.Type()
 
 	var f []reflect.StructField
@@ -396,7 +404,7 @@ func (s *Struct) structFields() []reflect.StructField {
 		}
 
 		// don't check if it's omitted
-		if tag := field.Tag.Get(s.TagName); tag == "-" {
+		if tag := field.Tag.Get(s.TagName); tag == "-" || In(tag, filterList) {
 			continue
 		}
 
@@ -423,7 +431,12 @@ func strctVal(s interface{}) reflect.Value {
 
 // Map converts the given struct to a map[string]interface{}. For more info
 // refer to Struct types Map() method. It panics if s's kind is not struct.
-func Map(s interface{}) map[string]interface{} {
+func Map(s interface{}, filterlist ...string) map[string]interface{} {
+
+	if len(filterlist) > 0 {
+		return New(s).Map(filterlist...)
+	}
+
 	return New(s).Map()
 }
 
