@@ -3,14 +3,13 @@ package structs
 
 import (
 	"fmt"
-
 	"reflect"
 )
 
 var (
-	// DefaultTagName is the default tag name for struct fields which provides
-	// a more granular to tweak certain structs. Lookup the necessary functions
-	// for more info.
+// DefaultTagName is the default tag name for struct fields which provides
+// a more granular to tweak certain structs. Lookup the necessary functions
+// for more info.
 	DefaultTagName = "structs" // struct's field default tag name
 )
 
@@ -438,6 +437,19 @@ func Map(s interface{}, filterlist ...string) map[string]interface{} {
 	}
 
 	return New(s).Map()
+}
+
+func JsonMap(s interface{}, filterlist ...string) map[string]interface{} {
+
+	m := New(s)
+	m.TagName = "json"
+
+	if len(filterlist) > 0 {
+
+		return m.Map(filterlist...)
+	}
+
+	return m.Map()
 }
 
 // Values converts the given struct to a []interface{}. For more info refer to
