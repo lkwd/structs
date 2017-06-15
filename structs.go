@@ -7,9 +7,9 @@ import (
 )
 
 var (
-// DefaultTagName is the default tag name for struct fields which provides
-// a more granular to tweak certain structs. Lookup the necessary functions
-// for more info.
+	// DefaultTagName is the default tag name for struct fields which provides
+	// a more granular to tweak certain structs. Lookup the necessary functions
+	// for more info.
 	DefaultTagName = "structs" // struct's field default tag name
 )
 
@@ -23,11 +23,17 @@ type Struct struct {
 
 // New returns a new *Struct with the struct s. It panics if the s's kind is
 // not struct.
-func New(s interface{}) *Struct {
+func New(s interface{}, tagname ...string) *Struct {
+
+	tag := DefaultTagName
+	if len(tagname) > 0 {
+		tag = tagname[0]
+	}
+
 	return &Struct{
 		raw:     s,
 		value:   strctVal(s),
-		TagName: DefaultTagName,
+		TagName: tag,
 	}
 }
 
@@ -387,6 +393,7 @@ func In(s string, filterList []string) bool {
 	}
 	return false
 }
+
 // structFields returns the exported struct fields for a given s struct. This
 // is a convenient helper method to avoid duplicate code in some of the
 // functions.
@@ -441,8 +448,7 @@ func Map(s interface{}, filterlist ...string) map[string]interface{} {
 
 func JsonMap(s interface{}, filterlist ...string) map[string]interface{} {
 
-	m := New(s)
-	m.TagName = "json"
+	m := New(s, "json")
 
 	if len(filterlist) > 0 {
 
