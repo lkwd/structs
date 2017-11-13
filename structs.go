@@ -409,8 +409,7 @@ func (s *Struct) structFields(filterList ...string) []reflect.StructField {
 			continue
 		}
 
-		// don't check if it's omitted
-		if tag := field.Tag.Get(s.TagName); tag == "-" || In(tag, filterList) {
+		if tag, _ := parseTag(field.Tag.Get(s.TagName)); tag == "-" || In(tag, filterList) {
 			continue
 		}
 
